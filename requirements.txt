@@ -1,0 +1,11 @@
+flask
+pymongo
+PyJWT
+unidecode
+xmltodict
+requests
+elasticsearch==7.15.2
+
+flask-swagger-ui
+
+

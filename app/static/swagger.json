@@ -1,0 +1,328 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "DataTarget API",
+        "description": "Este código é uma aplicação Flask que implementa algumas rotas que permitem a criação, listagem e autenticação de usuários, bem como a busca de previsões do tempo com base em um determinado CEP. O código também utiliza uma instância Elasticsearch para registrar logs de todas as solicitações recebidas."
+        },
+        "host": "localhost:5000",
+        "basePath": "/",
+        "schemes": [
+        "http"
+        ],
+        "tags": [
+            {
+            "name": "user",
+            "description": "Operações referentes ao usuário."
+            },
+            {
+            "name": "logs",
+            "description": "Operações referentes aos logs da API."
+            },
+            {
+            "name": "cep",
+            "description": "Operação para consulta de CEP."
+            }
+
+        ],
+        "paths": {
+        "/user/list": {
+            "get": {
+            "summary": "Listar usuários",
+            "description": "Retorna uma lista com os usuários cadastrados.",
+            "produces": [
+                "application/json"
+            ],
+            "tags": [
+                "user"
+            ],
+            "responses": {
+                "200": {
+                "description": "Lista de usuários",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                    "users": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                            "type": "string"
+                            },
+                            "password": {
+                            "type": "string"
+                            }
+                        }
+                        }
+                    }
+                    }
+                }
+                }
+            }
+            }
+        },
+        "/user/create": {
+            "post": {
+                "summary": "Criar usuário",
+                "description": "Cria um novo usuário com nome de usuário e senha especificados no corpo da solicitação.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "formData",
+                        "description": "Nome do usuário a ser criado.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "Senha do usuário a ser criado.",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário criado com sucesso!",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mensagem": {
+                                    "type": "string",
+                                    "example": "Usuário criado com sucesso!"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/login": {
+            "post": {
+                "summary": "Login de usuário",
+                "description": "Realiza o login do usuário com nome de usuário e senha especificados no corpo da solicitação e retorna um token de acesso.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Nome de usuário e senha do usuário.",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "type": "string"
+                                },
+                                "password": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token de acesso gerado com sucesso!",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mensagem": {
+                                    "type": "string"
+                                },
+                                "token": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Campos de usuário ou senha inválidos.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mensagem": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logs": {
+            "get": {
+                "summary": "Obtém logs de requisições à API",
+                "description": "Retorna uma lista de logs de requisições à API armazenados no Elasticsearch.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "logs"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de logs de requisições à API.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "timestamp": {
+                                        "type": "string"
+                                    },
+                                    "method": {
+                                        "type": "string"
+                                    },
+                                    "endpoint": {
+                                        "type": "string"
+                                    },
+                                    "response_time": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cep": {
+            "post": {
+                "summary": "Obtenha informações meteorológicas para um CEP brasileiro.",
+                "description": "Esta API recebe um CEP brasileiro como entrada e retorna um JSON com as informações de endereço do viacep.com.br e a previsão do tempo para a cidade correspondente do cptec.inpe.br.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cep"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "description": "O CEP brasileiro para obter informações meteorológicas.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                            "cep": {
+                                "type": "string",
+                                "example": "01310100"
+                            }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Informações meteorológicas para o CEP foram obtidas com sucesso.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "cep": {
+                                    "type": "string",
+                                    "example": "01310100"
+                                },
+                                "logradouro": {
+                                    "type": "string",
+                                    "example": "Avenida Paulista"
+                                },
+                                "complemento": {
+                                    "type": "string",
+                                    "example": "até 610 - lado par"
+                                },
+                                "bairro": {
+                                    "type": "string",
+                                    "example": "Bela Vista"
+                                },
+                                "localidade": {
+                                    "type": "string",
+                                    "example": "São Paulo"
+                                },
+                                "uf": {
+                                    "type": "string",
+                                    "example": "SP"
+                                },
+                                "ibge": {
+                                    "type": "string",
+                                    "example": "3550308"
+                                },
+                                "gia": {
+                                    "type": "string",
+                                    "example": "1004"
+                                },
+                                "ddd": {
+                                    "type": "string",
+                                    "example": "11"
+                                },
+                                "siafi": {
+                                    "type": "string",
+                                    "example": "7107"
+                                },
+                                "previsoes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "dia": {
+                                            "type": "string",
+                                            "example": "31/03/2023"
+                                            },
+                                            "tempo": {
+                                            "type": "string",
+                                            "example": "dia"
+                                            },
+                                            "maxima": {
+                                            "type": "string",
+                                            "example": "35"
+                                            },
+                                            "minima": {
+                                            "type": "string",
+                                            "example": "20"
+                                            },
+                                            "iuv": {
+                                            "type": "string",
+                                            "example": "12"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "O campo CEP é inválido.",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "mensagem": {
+                            "type": "string",
+                            "example": "Erro na resposta"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }        
+}
